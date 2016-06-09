@@ -34,11 +34,17 @@ import android.widget.TextView;
 
 
 import com.appspot.domoticsmartsystem.dss.Dss;
+import com.appspot.domoticsmartsystem.dss.model.GenericMessagesResponse;
+import com.appspot.domoticsmartsystem.dss.model.UserMessageLoginRequest;
+import com.appspot.domoticsmartsystem.dss.model.UserMessageLoginResponse;
+import com.appspot.domoticsmartsystem.dss.model.UserMessageRegistrationRequest;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -66,6 +72,9 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private EditText mNameView;
+    private EditText mLastnameView;
+    private EditText mHostView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,32 +87,22 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
-
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptRegister();
-                    return true;
-                }
-                return false;
-            }
-        });
+        mNameView= (EditText)findViewById(R.id.name);
+        mLastnameView=(EditText) findViewById(R.id.lname);
+        mHostView= (EditText)findViewById(R.id.host);
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                int i;
-                i=attemptRegister();
-                if(i==1){
-                    //Apri activity Verification per controllare i sensori in casa
-                    // Intent openPage2 = new Intent(RegisterActivity.this,VerificationActivity.class);
-                    // startActivity(openPage2);
 
-                    //Dss.Builder dss=new Dss.Builder(AndroidHttp.newCompatibleTransport(),new GsonFactory(),)
-
+                try {
+                    attemptRegister();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
 
 
@@ -165,23 +164,47 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
      */
 
     /***********************MODIFICARE QUIIIIIII ******************************************/
-    private int attemptRegister() {
-        if (mAuthTask != null) {
-            return 1;
-        }
+    private void attemptRegister() throws ExecutionException, InterruptedException {
+
 
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
+        mNameView.setError(null);
+        mLastnameView.setError(null);
+        mHostView.setError(null);
 
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
+        String name= mNameView.getText().toString();
+        String lname=mNameView.getText().toString();
+        String host=mHostView.getText().toString();
+    /***********************************/
 
         boolean cancel = false;
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
+        if(TextUtils.isEmpty(host)){
+            mHostView.setError("This field is required");
+            focusView=mHostView;
+            cancel=true;
+
+        }
+
+        if(TextUtils.isEmpty(name)){
+            mNameView.setError("This field is required");
+            focusView=mNameView;
+            cancel=true;
+
+        }
+        if(TextUtils.isEmpty(lname)){
+            mLastnameView.setError("This field is required");
+            focusView=mLastnameView;
+            cancel=true;
+
+        }
         if (TextUtils.isEmpty(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
@@ -202,13 +225,12 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-            return 0;
 
         } else if (!isEmailValid(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
-            return 0;
+
 
         }
 
@@ -216,15 +238,17 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // There was an error; don't attempt login and focus the first
             // form field with an error.
             focusView.requestFocus();
+            return;
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
-            return 1;
+            mAuthTask = new UserLoginTask(email, password, name, lname, host);
+            mAuthTask.execute((Void) null).get();
+
+            Intent openPage3 = new Intent(RegisterActivity.this,VerificationActivity.class);
+            startActivity(openPage3);
         }
-        return 1;
     }
 
     private boolean isEmailValid(String email) {
@@ -245,6 +269,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
      * Shows the progress UI and hides the login form.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+
     private void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
@@ -339,46 +364,54 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
         private final String mEmail;
         private final String mPassword;
+        private final String mName;
+        private final String mLname;
+        private final String mHost;
 
-        UserLoginTask(String email, String password) {
+        UserLoginTask(String email, String password, String name, String lname, String host) {
+            mName = name;
+            mLname = lname;
             mEmail = email;
             mPassword = password;
-        }
+            mHost=host;
 
+        }
+       Dss mDss = new Dss.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).build();
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO:  authentication against a network service.
 
+            Dss register = new Dss.Builder(AndroidHttp.newCompatibleTransport(),new AndroidJsonFactory(),null).build();
+            Dss.UserApi regapi = register.userApi();
+            boolean var=false;
             try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
+                GenericMessagesResponse objreg= regapi.register(new UserMessageRegistrationRequest()
+                        .setEmail(mEmail)
+                        .setPassword(mPassword)
+                        .setFirstname(mName)
+                        .setLastname(mLname)
+                        .setHost(mHost))
+                        .execute();
+                if(objreg.getStatusCode()==200) {
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+                    UserMessageLoginRequest request = new UserMessageLoginRequest();
+                    request.setEmail(mEmail);
+                    request.setPassword(mPassword);
+                    UserMessageLoginResponse response = mDss.userApi().login(request).execute();
+                    if (response.getResponse().getStatusCode() == 200) {
+                        var = true;
+                    }
+
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
-            // TODO: register the new account here.
-            return true;
+            return var;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
+        protected void onPostExecute(final Boolean var) {
             showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
         }
 
         @Override

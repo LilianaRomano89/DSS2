@@ -249,8 +249,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return  password.matches("^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9\\s]).{7,}");
+        return  password.matches(".{7,}");
     }
+
 
     /**
      * Shows the progress UI and hides the login form.

@@ -32,6 +32,11 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
             <EditText
 
                 android:id="@+id/name"
@@ -41,6 +46,13 @@
                 android:inputType="textPersonName"
                 android:maxLines="1"
                 android:singleLine="true" />
+
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
             <EditText
 
                 android:id="@+id/lname"
@@ -50,6 +62,23 @@
                 android:inputType="textPersonName"
                 android:maxLines="1"
                 android:singleLine="true" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+
+                    android:id="@+id/host"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Host"
+                    android:inputType="textPersonName"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+
+            </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"

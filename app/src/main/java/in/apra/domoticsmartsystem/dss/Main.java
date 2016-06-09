@@ -22,12 +22,14 @@ public class Main extends AppCompatActivity {
                 switch(view.getId()) {
                     case R.id.bottone1:
                         Intent openPage1 = new Intent(Main.this,LoginActivity.class);
-                        startActivity(openPage1
-                        );
+                        startActivity(openPage1);
 
                         break;
                     case R.id.bottone2:
-                        //Registrati
+                        Intent openPage2 = new Intent(Main.this,RegisterActivity.class);
+                        startActivity(openPage2);
+
+
                         break;
                 }
             }
