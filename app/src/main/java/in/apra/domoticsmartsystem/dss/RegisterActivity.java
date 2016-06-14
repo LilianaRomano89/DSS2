@@ -244,20 +244,19 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // perform the user login attempt.
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password, name, lname, host);
-            mAuthTask.execute((Void) null).get();
+            if(mAuthTask.execute((Void) null).get()) {
 
-            Intent openPage3 = new Intent(RegisterActivity.this,VerificationActivity.class);
-            startActivity(openPage3);
+                Intent openPage3 = new Intent(RegisterActivity.this, SettingActivity.class);
+                startActivity(openPage3);
+            }
         }
     }
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.contains("@gmail.com")|| email.contains("@hotmail.com")||email.contains("@hotmail.it")
-                ||email.contains("@libero.it")||email.contains("@studenti.uniparthenope.com")
-                ||email.contains("@live.com")||email.contains("@live.it") ||email.contains("@tim.it")
-                ||email.contains("@alice.it")||email.contains("@tin.it") || email.contains("@vodafone.it")
-                ||email.contains("@tre.it")||email.contains("@yahoo.it");
+       return email.matches("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+                + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+
     }
 
     private boolean isPasswordValid(String password) {

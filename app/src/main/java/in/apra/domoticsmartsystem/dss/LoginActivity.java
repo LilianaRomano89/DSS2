@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -53,6 +54,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
+    SharedPreferences mPreferences;
 
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
@@ -74,6 +76,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login2);
+        mPreferences = getSharedPreferences("filePreference", MODE_PRIVATE);
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -84,7 +87,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
+                    try {
+                        attemptLogin();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     return true;
                 }
                 return false;
@@ -97,19 +106,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                int i;
-                i=attemptLogin();
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(LoginActivity.this);
-                if(i==1){
-                    //Apri activity Verification per controllare i sensori in casa
-                    //Intent openPage2 = new Intent(LoginActivity.this,VerificationActivity.class);
-                    //startActivity(openPage2);
 
-                    alertDialog.setMessage("Login riuscito");
-                } else {
-                    alertDialog.setMessage("Login fallito");
+                try {
+
+                    attemptLogin();
+
+                } catch (ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
                 }
-                alertDialog.show();
 
 
             }
@@ -170,10 +174,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
 
     /***********************MODIFICARE QUIIIIIII ******************************************/
-    private int attemptLogin() {
-        if (mAuthTask != null) {
-            return 1;
-        }
+    private void attemptLogin() throws ExecutionException, InterruptedException {
+
 
         // Reset errors.
         mEmailView.setError(null);
@@ -207,13 +209,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-            return 0;
 
         } else if (!isEmailValid(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
-            return 0;
+
 
         }
 
@@ -221,30 +222,27 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // There was an error; don't attempt login and focus the first
             // form field with an error.
             focusView.requestFocus();
+            return;
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password);
-            int var=0;
-            try {
-                 // Solo un esempio meglio evitare i get nell'asynctask!!!!!
-                var= mAuthTask.execute((Void) null).get() ? 1 : 0;
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+            if(mAuthTask.execute((Void) null).get()) {
+
+
+                Intent openPage3 = new Intent(LoginActivity.this, SettingActivity.class);
+                startActivity(openPage3);
             }
-            return var;
+
         }
-        return 1;
+
     }
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.contains("@gmail.com")|| email.contains("@hotmail.com")||email.contains("@hotmail.it")
-                ||email.contains("@libero.it")||email.contains("@studenti.uniparthenope.com")
-                ||email.contains("@live.com")||email.contains("@live.it") ||email.contains("@tim.it")
-                ||email.contains("@alice.it")||email.contains("@tin.it") || email.contains("@vodafone.it")
-                ||email.contains("@tre.it")||email.contains("@yahoo.it");
+        return email.matches("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+                + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
     }
 
     private boolean isPasswordValid(String password) {
@@ -369,11 +367,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 request.setPassword(mPassword);
                 UserMessageLoginResponse response = mDss.userApi().login(request).execute();
                 if (response.getResponse().getStatusCode() == 200) {
+                    String token=response.getToken();
+                    SharedPreferences.Editor edit = mPreferences.edit();
+                    edit.putString("token",token);
+                    edit.commit();
                     result = true;
                 }
 
             } catch (IOException e) {
-                return false;
+                e.printStackTrace();
             }
 
             // TODO: register the new account here.
@@ -385,12 +387,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             //mAuthTask = null;
             showProgress(false);
 
-//            if (success) {
-//                finish();
-//            } else {
-//                mPasswordView.setError(getString(R.string.error_incorrect_password));
-//                mPasswordView.requestFocus();
-//            }
         }
 
         @Override
@@ -399,5 +395,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
         }
     }
+
+
 }
 

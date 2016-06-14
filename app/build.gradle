@@ -20,13 +20,20 @@ android {
     }
 }
 
+
+repositories {
+    maven { url "https://jitpack.io" }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:design:23.1.1'
-    compile 'com.android.support:support-v4:23.1.1'
     compile([group: 'com.google.api-client', name: 'google-api-client-android', version: '1.22.0'])
     compile project(':dss')
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:design:23.4.0'
+    compile 'com.android.support:support-v4:23.4.0'
     compile 'org.quanqi:android-holo-graph:0.1.0'
+    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
+    compile 'com.github.PhilJay:MPAndroidChart:v2.0.9'
 }

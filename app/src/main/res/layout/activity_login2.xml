@@ -8,9 +8,10 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:backgroundTint="#a8fc8c"
-    android:background="#fbf9f9"
-    tools:context="in.apra.domoticsmartsystem.dss.LoginActivity">
+
+    android:background="#000000"
+    tools:context="in.apra.domoticsmartsystem.dss.LoginActivity"
+    android:weightSum="1">
 
     <!-- Login progress -->
     <ProgressBar
@@ -24,7 +25,7 @@
     <ScrollView
         android:id="@+id/login_form"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="198dp">
 
         <LinearLayout
             android:id="@+id/email_login_form"
@@ -39,6 +40,8 @@
 
                 <AutoCompleteTextView
                     android:id="@+id/email"
+                    android:background="#d2d2d2"
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_email"
@@ -58,6 +61,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Password"
+                    android:background="#d2d2d2"
+
                     android:imeActionId="@+id/login"
                     android:imeActionLabel="@string/action_sign_in_short"
                     android:imeOptions="actionUnspecified"
@@ -67,16 +72,19 @@
 
             </android.support.design.widget.TextInputLayout>
 
-            <Button
-                android:id="@+id/email_sign_in_button"
-                style="?android:textAppearanceSmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Login"
-                android:textStyle="bold"
-                android:layout_weight="2.28" />
-
         </LinearLayout>
     </ScrollView>
+
+    <Button
+        android:id="@+id/email_sign_in_button"
+        style="?android:textAppearanceSmall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Login"
+        android:textStyle="bold"
+        android:textColor="#0080ff"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.12"
+        />
 </LinearLayout>
