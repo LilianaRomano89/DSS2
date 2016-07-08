@@ -1,0 +1,69 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fbf9f9"
+    android:backgroundTint="#f4f8f3"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="in.apra.domoticsmartsystem.dss.SettingActivity">
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/chart"
+        android:layout_width="500dp"
+        android:layout_height="350dp" />
+
+    <ToggleButton
+        android:id="@+id/gas_state_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="false"
+        android:layout_below="@+id/chart"
+        android:layout_toEndOf="@+id/textView2"
+        android:checked="false"
+        android:text="New ToggleButton" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/gas_state_btn"
+        android:layout_below="@+id/chart"
+        android:layout_marginLeft="52dp"
+        android:gravity="center_vertical"
+        android:padding="15dp"
+        android:text="Gas Alarm"
+        android:textAlignment="center"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#e32020" />
+
+    <ToggleButton
+        android:id="@+id/intrusion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/itr"
+        android:layout_toEndOf="@+id/textView2"
+        android:text="New ToggleButton"
+        android:textOff="Off"
+        android:textOn="On" />
+
+    <TextView
+        android:id="@+id/itr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView2"
+        android:layout_marginLeft="52dp"
+        android:layout_toStartOf="@+id/intrusion"
+        android:gravity="center_vertical"
+        android:padding="15dp"
+        android:text="Intrusion Alarm"
+        android:textAlignment="center"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#e32020" />
+
+
+</RelativeLayout>

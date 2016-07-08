@@ -3,35 +3,28 @@ package in.apra.domoticsmartsystem.dss;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
-
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
-
-//import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-
 
 import com.appspot.domoticsmartsystem.dss.Dss;
 import com.appspot.domoticsmartsystem.dss.model.GenericMessagesResponse;
@@ -46,11 +39,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-
 import static android.Manifest.permission.READ_CONTACTS;
 
+//import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+
 /**
- * A login screen that offers login via email/password.
+ * Schermata di login che permette accesso via e-mail / password, in essa vengono
+ * inseriti i dati dell'utente per creare un nuovo account:
+ * - Name
+ * -LastName
+ * -Host
+ * -Password
+ * -Email
  */
 public class RegisterActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
@@ -59,13 +59,10 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
      */
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
+    private UserRegisterTask mAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -81,31 +78,22 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        //Dss dss=new Dss.Builder(AndroidHttp.newCompatibleTransport(),new AndroidJsonFactory(),null).build();
-        //GoogleAccountCredential credital= GoogleAccountCredential.usingAudience(this,"server:client_id:658742873129-bnle1rfsvhlt8jl7j4v4t0hfhn0o27fu.apps.googleusercontent.com");
-         //credital.setSelectedAccountName("liliana.romano1@hotmail.com");
-        // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
         mPasswordView = (EditText) findViewById(R.id.password);
-        mNameView= (EditText)findViewById(R.id.name);
-        mLastnameView=(EditText) findViewById(R.id.lname);
-        mHostView= (EditText)findViewById(R.id.host);
+        mNameView = (EditText) findViewById(R.id.name);
+        mLastnameView = (EditText) findViewById(R.id.lname);
+        mHostView = (EditText) findViewById(R.id.host);
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 try {
                     attemptRegister();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
+                } catch (ExecutionException | InterruptedException e) {
                     e.printStackTrace();
                 }
-
-
             }
         });
 
@@ -144,7 +132,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     }
 
     /**
-     * Callback received when a permissions request has been completed.
+     * Callback ricevuta quando una richiesta di autorizzazioni e' stata completata
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
@@ -158,66 +146,62 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
 
     /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
+     * Tentativo di Sign in o register dell'account.
+     * Se ci sono errori di validita' (e-mail, password,campi mancanti, ecc), non
+     * verra' effettuata la registrazione e il tentativo di accesso verra' rifiutato.
+     * Se invece la registrazione va' a buon fine, con un Intent, verra' lanciata una
+     *nuova activity.
+     *
      */
-
-    /***********************MODIFICARE QUIIIIIII ******************************************/
     private void attemptRegister() throws ExecutionException, InterruptedException {
-
-
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
         mNameView.setError(null);
         mLastnameView.setError(null);
         mHostView.setError(null);
+        SharedPreferences mPreferences = getSharedPreferences("filePreference", MODE_PRIVATE);
 
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
-        String name= mNameView.getText().toString();
-        String lname=mNameView.getText().toString();
-        String host=mHostView.getText().toString();
-    /***********************************/
+        String name = mNameView.getText().toString();
+        String lname = mNameView.getText().toString();
+        String host = mHostView.getText().toString();
+        /***********************************/
 
         boolean cancel = false;
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if(TextUtils.isEmpty(host)){
+        if (TextUtils.isEmpty(host)) {
             mHostView.setError("This field is required");
-            focusView=mHostView;
-            cancel=true;
-
+            focusView = mHostView;
+            cancel = true;
         }
 
-        if(TextUtils.isEmpty(name)){
+        if (TextUtils.isEmpty(name)) {
             mNameView.setError("This field is required");
-            focusView=mNameView;
-            cancel=true;
-
+            focusView = mNameView;
+            cancel = true;
         }
-        if(TextUtils.isEmpty(lname)){
+
+        if (TextUtils.isEmpty(lname)) {
             mLastnameView.setError("This field is required");
-            focusView=mLastnameView;
-            cancel=true;
-
+            focusView = mLastnameView;
+            cancel = true;
         }
+
         if (TextUtils.isEmpty(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
-
-
         }
 
         if (!isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
-
         }
 
         // Check for a valid email address.
@@ -225,47 +209,45 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-
         } else if (!isEmailValid(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
-
-
         }
 
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
             focusView.requestFocus();
-            return;
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password, name, lname, host);
-            if(mAuthTask.execute((Void) null).get()) {
-
+            mAuthTask = new UserRegisterTask(email, password, name, lname, host);
+            if (mAuthTask.execute((Void) null).get()) {
                 Intent openPage3 = new Intent(RegisterActivity.this, SettingActivity.class);
                 startActivity(openPage3);
+                SharedPreferences.Editor edit = mPreferences.edit();
+                edit.putString("email", email);
+                edit.commit();
             }
         }
     }
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-       return email.matches("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+        return email.matches("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
                 + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 
     }
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return  password.matches("^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9\\s]).{7,}");
+        return password.matches("^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9\\s]).{7,}");
     }
 
     /**
-     * Shows the progress UI and hides the login form.
+     * Mostra l'interfaccia utente e nasconde il modulo di login.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
 
@@ -352,45 +334,46 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         };
 
         int ADDRESS = 0;
-        int IS_PRIMARY = 1;
     }
 
     /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
+     * Tale classe permette la registrazione asincrona, per l'autentificazione da parte dell'utente,
+     * se il server restituice un valore numeri pari a 200 la registrazione e' accettata restituisce
+     * un valore true.
+     *
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserRegisterTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mEmail;
         private final String mPassword;
         private final String mName;
         private final String mLname;
         private final String mHost;
+        Dss mDss = new Dss.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).build();
 
-        UserLoginTask(String email, String password, String name, String lname, String host) {
+        UserRegisterTask(String email, String password, String name, String lname, String host) {
             mName = name;
             mLname = lname;
             mEmail = email;
             mPassword = password;
-            mHost=host;
-
+            mHost = host;
         }
-       Dss mDss = new Dss.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).build();
+
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            Dss register = new Dss.Builder(AndroidHttp.newCompatibleTransport(),new AndroidJsonFactory(),null).build();
+            Dss register = new Dss.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null).build();
             Dss.UserApi regapi = register.userApi();
-            boolean var=false;
+            boolean var = false;
             try {
-                GenericMessagesResponse objreg= regapi.register(new UserMessageRegistrationRequest()
+                GenericMessagesResponse objreg = regapi.register(new UserMessageRegistrationRequest()
                         .setEmail(mEmail)
                         .setPassword(mPassword)
                         .setFirstname(mName)
                         .setLastname(mLname)
                         .setHost(mHost))
                         .execute();
-                if(objreg.getStatusCode()==200) {
+                if (objreg.getStatusCode() == 200) {
 
                     UserMessageLoginRequest request = new UserMessageLoginRequest();
                     request.setEmail(mEmail);
